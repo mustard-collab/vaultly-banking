@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ bank_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        vault: { 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.25s ease, color 0.25s ease; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.92); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(15, 23, 42, 0.1); 
+        }
+        html.dark .glass-card { 
+            background: rgba(15, 23, 42, 0.82); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+        .visa-card-bg {
+            background: radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.45) 0%, rgba(15, 23, 42, 0.95) 55%, #020617 100%);
+            box-shadow: 0 20px 40px -15px rgba(29, 78, 216, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .mastercard-card-bg {
+            background: radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.35) 0%, rgba(24, 24, 27, 0.96) 55%, #09090b 100%);
+            box-shadow: 0 20px 40px -15px rgba(217, 119, 6, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .emv-chip {
+            background: linear-gradient(135deg, #fcd34d 0%, #d97706 50%, #fbbf24 100%);
+            border: 1px solid rgba(120, 53, 15, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-[#060911] dark:text-slate-100 min-h-screen flex flex-col items-center p-3 sm:p-6">
+
+    <!-- Top App Header with Explicit Width/Height SVG Brand Logo -->
+    <header class="w-full max-w-md flex justify-between items-center py-2.5 mb-2">
+        <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#0a0f1e] border-2 border-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,14 58,28 50,42 42,28" fill="#10b981"/>
+                    <polygon points="20,26 38,26 50,64 62,26 80,26 57,86 43,86" fill="#2563eb"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-extrabold tracking-tight text-lg leading-none">VAULTLY</h1>
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wider uppercase">Digital Banking Suite</span>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <button type="button" onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm shadow-sm hover:scale-105 active:scale-95 transition" title="Switch Theme">
+                <span id="themeIcon">☀️</span>
+            </button>
+            <div id="liveSyncBadge" class="flex items-center space-x-1.5 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[11px]">Live Sync</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 1. AUTHENTICATION VIEW (SIGN IN / REGISTER)-->
+    <!-- ========================================== -->
+    <main id="authView" class="w-full max-w-md glass-card rounded-3xl p-6 sm:p-7 shadow-2xl mt-2">
+        <div class="flex bg-slate-200 dark:bg-slate-900 p-1 rounded-2xl border border-slate-300 dark:border-slate-800 mb-6">
+            <button id="tabLogin" type="button" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md transition">Sign In</button>
+            <button id="tabRegister" type="button" onclick="switchAuthTab('register')" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Open Account</button>
+        </div>
+
+        <!-- Form: Login -->
+        <div id="formLogin" class="space-y-4">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                <input id="loginEmail" type="email" placeholder="name@domain.com" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Master Password</label>
+                <input id="loginPassword" type="password" placeholder="••••••••••••" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white">
+            </div>
+            <button id="btnLogin" type="button" onclick="initiateLogin()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30">
+                Continue with 2FA
+            </button>
+        </div>
+
+        <!-- Form: Register -->
+        <div id="formRegister" class="space-y-3.5 hidden">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Full Legal Name</label>
+                <input id="regName" type="text" placeholder="e.g. Muhammad Mustafa Khan" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Personal Email</label>
+                <input id="regEmail" type="email" placeholder="youremail@gmail.com" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Create Password</label>
+                <input id="regPassword" type="password" placeholder="••••••••••••" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Opening Balance</label>
+                    <input id="regDeposit" type="number" value="100000" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white font-mono font-bold">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Select Card Tier</label>
+                    <select id="regCardScheme" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-xs font-bold text-slate-900 dark:text-white">
+                        <option value="VISA">💳 VISA Infinite</option>
+                        <option value="MASTERCARD">💳 Mastercard World</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btnRegister" type="button" onclick="initiateRegister()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-emerald-600/30">
+                Create Account & Send OTP
+            </button>
+        </div>
+
+        <!-- Form: OTP Code -->
+        <div id="stepOtp" class="space-y-4 hidden mt-2">
+            <div class="text-center bg-blue-500/10 border border-blue-500/30 p-4 rounded-2xl">
+                <span class="text-2xl">📩</span>
+                <p class="text-xs text-blue-600 dark:text-blue-300 font-bold mt-1">One-Time Passcode Dispatched</p>
+                <p id="otpNoticeEmail" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Check your Gmail inbox.</p>
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center mb-2">Enter 6-Digit OTP</label>
+                <input id="otpCode" type="text" maxlength="6" placeholder="------" class="w-full text-center tracking-[14px] font-mono font-bold text-2xl py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:border-blue-500 focus:outline-none text-slate-900 dark:text-white">
+            </div>
+            <button id="btnVerifyOtp" type="button" onclick="submitOtpVerification()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30">
+                Verify & Launch Vault
+            </button>
+            <button type="button" onclick="cancelOtpStep()" class="w-full py-2 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white transition">Back</button>
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 2. MAIN BANKING DASHBOARD (LOGGED IN)      -->
+    <!-- ========================================== -->
+    <main id="dashboardView" class="w-full max-w-md space-y-4 hidden pb-16">
+        
+        <!-- Balance & Account Overview Bar -->
+        <div class="glass-card rounded-3xl p-5 flex justify-between items-center shadow-lg">
+            <div>
+                <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">Total Liquid Balance</span>
+                <h2 id="cardBalance" class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">PKR 0.00</h2>
+                <div class="flex items-center space-x-2 mt-1 cursor-pointer group" onclick="copyAccountNo()">
+                    <span class="text-[11px] text-slate-500">Acc No:</span>
+                    <span id="cardAccNo" class="mono font-bold text-xs text-blue-500 tracking-wider">8800000000</span>
+                    <span class="text-xs group-hover:scale-110 transition">📋</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-end space-y-2">
+                <button type="button" onclick="logout()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 px-3 py-1.5 rounded-xl font-bold transition">Sign Out</button>
+                <span id="cardStatusBadge" class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold">CARD ACTIVE</span>
+            </div>
+        </div>
+
+        <!-- Realistic 3D Metallic Virtual Debit Card (Visa / Mastercard) -->
+        <div id="virtualCardBox" class="visa-card-bg rounded-3xl p-6 relative overflow-hidden border border-white/15 text-white select-none transition-all duration-500">
+            <div class="absolute -right-12 -top-12 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg width="20" height="20" viewBox="0 0 100 100" fill="none">
+                        <polygon points="50,14 58,28 50,42 42,28" fill="#10b981"/>
+                        <polygon points="20,26 38,26 50,64 62,26 80,26 57,86 43,86" fill="#3b82f6"/>
+                    </svg>
+                    <span class="font-extrabold tracking-widest text-xs uppercase text-white/90">VAULTLY</span>
+                    <span id="cardTierLabel" class="text-[9px] uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded text-blue-200 font-semibold">INFINITE</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="toggleCardMask()" id="btnMaskCard" class="text-[10px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-bold backdrop-blur-sm transition">
+                        👁️ Show Numbers
+                    </button>
+                    <svg width="20" height="20" class="text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" d="M8.5 14.5A4 4 0 0 1 8.5 9.5M11.5 17A7.5 7.5 0 0 1 11.5 7M14.5 19.5a11 11 0 0 1 0-15"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-5 mb-4">
+                <div class="w-11 h-8 rounded-md emv-chip mb-3 flex items-center justify-center relative overflow-hidden">
+                    <div class="w-full h-[1px] bg-amber-900/40 absolute top-1/2"></div>
+                    <div class="h-full w-[1px] bg-amber-900/40 absolute left-1/3"></div>
+                    <div class="h-full w-[1px] bg-amber-900/40 absolute right-1/3"></div>
+                </div>
+                <div id="fullCardDetails" class="mono text-lg sm:text-xl tracking-[0.22em] font-bold text-white drop-shadow">
+                    4214 •••• •••• <span id="cardEndDigits">0000</span>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-end pt-2 border-t border-white/10">
+                <div class="flex space-x-5">
+                    <div>
+                        <span class="block text-[8px] uppercase tracking-widest text-white/50">Card Holder</span>
+                        <span id="cardHolder" class="font-bold text-xs tracking-wider uppercase text-white">MUHAMMAD MUSTAFA</span>
+                    </div>
+                    <div>
+                        <span class="block text-[8px] uppercase tracking-widest text-white/50">Valid Thru</span>
+                        <span id="cardExpVal" class="mono font-bold text-xs text-white">11/31</span>
+                    </div>
+                    <div>
+                        <span class="block text-[8px] uppercase tracking-widest text-white/50">CVV2</span>
+                        <span id="cardCvvVal" class="mono font-bold text-xs text-amber-300">•••</span>
+                    </div>
+                </div>
+
+                <div id="cardSchemeLogo">
+                    <span class="italic font-black text-2xl tracking-tighter text-white">VISA</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5-Button Navigation Grid -->
+        <div class="grid grid-cols-5 gap-1.5">
+            <button type="button" onclick="switchServiceTab('transfer')" id="btnTabTransfer" class="p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center space-y-1 ring-2 ring-blue-500 transition">
+                <span class="text-lg">💸</span>
+                <span class="text-[10px] font-bold">Transfer</span>
+            </button>
+            <button type="button" onclick="switchServiceTab('bills')" id="btnTabBills" class="p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center space-y-1 transition">
+                <span class="text-lg">💡</span>
+                <span class="text-[10px] font-bold">Bills</span>
+            </button>
+            <button type="button" onclick="switchServiceTab('card')" id="btnTabCard" class="p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center space-y-1 transition">
+                <span class="text-lg">💳</span>
+                <span class="text-[10px] font-bold">Card Ops</span>
+            </button>
+            <button type="button" onclick="switchServiceTab('analytics')" id="btnTabAnalytics" class="p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center space-y-1 transition">
+                <span class="text-lg">📊</span>
+                <span class="text-[10px] font-bold">Finance</span>
+            </button>
+            <button type="button" onclick="switchServiceTab('statement')" id="btnTabStatement" class="p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center space-y-1 transition">
+                <span class="text-lg">📅</span>
+                <span class="text-[10px] font-bold">Statement</span>
+            </button>
+        </div>
+
+        <!-- PANEL A: INTER-BANK TRANSFERS -->
+        <div id="panelTransfer" class="glass-card rounded-3xl p-5 shadow-xl space-y-3.5">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">1LINK / Raast Instant Transfer</h3>
+                <span id="taxBadge" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">FREE (Same Bank)</span>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Select Destination Bank</label>
+                <select id="txBankSelect" onchange="onBankSelectionChange()" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-xs text-slate-900 dark:text-white font-medium">
+                    {% for bank in banks %}
+                    <option value="{{ bank }}">{{ bank }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Beneficiary Account / IBAN</label>
+                <input id="txBeneficiary" type="text" placeholder="Enter 10-digit account no" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm mono text-slate-900 dark:text-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Amount (PKR)</label>
+                <input id="txAmount" type="number" placeholder="0.00" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white font-bold">
+            </div>
+
+            <button id="btnTransfer" type="button" onclick="executeTransfer()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30">
+                Execute Instant Transfer
+            </button>
+        </div>
+
+        <!-- PANEL B: UTILITY BILL PAYMENTS -->
+        <div id="panelBills" class="glass-card rounded-3xl p-5 shadow-xl space-y-3.5 hidden">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Utility & Telecom Bill Settlement</h3>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Select Billing Company</label>
+                <select id="billCompanySelect" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-xs text-slate-900 dark:text-white font-medium">
+                    {% for util in utilities %}
+                    <option value="{{ util }}">{{ util }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Consumer / Reference Number</label>
+                <input id="billConsumerNo" type="text" placeholder="e.g. 0400012345678" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm mono text-slate-900 dark:text-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Bill Amount (PKR)</label>
+                <input id="billAmount" type="number" placeholder="0.00" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 rounded-xl focus:border-blue-500 focus:outline-none text-sm text-slate-900 dark:text-white font-bold">
+            </div>
+
+            <button id="btnPayBill" type="button" onclick="executeBillPayment()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-emerald-600/30">
+                Pay Bill & Generate Voucher
+            </button>
+        </div>
+
+        <!-- PANEL C: VIRTUAL CARD CONTROLS & NETWORK SWITCHER -->
+        <div id="panelCard" class="glass-card rounded-3xl p-5 shadow-xl space-y-4 hidden">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Virtual Debit Card Security & Network</h3>
+            
+            <div class="p-3.5 rounded-2xl bg-slate-200/70 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800">
+                <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-2">Choose Virtual Card Network</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btnChooseVisa" onclick="changeCardScheme('VISA')" class="py-2.5 px-3 rounded-xl font-bold text-xs border border-blue-500 bg-blue-600 text-white transition flex items-center justify-center space-x-1.5">
+                        <span>💳</span>
+                        <span>VISA Infinite</span>
+                    </button>
+                    <button type="button" id="btnChooseMaster" onclick="changeCardScheme('MASTERCARD')" class="py-2.5 px-3 rounded-xl font-bold text-xs border border-slate-700 bg-slate-800 text-slate-300 transition flex items-center justify-center space-x-1.5">
+                        <span>🟠</span>
+                        <span>Mastercard World</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-1">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-bold block">Card Active Status</span>
+                        <span class="text-[10px] text-slate-500">Uncheck to immediately freeze card</span>
+                    </div>
+                    <input type="checkbox" id="chkCardActive" onchange="syncCardSettings()" class="w-5 h-5 accent-blue-600">
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-bold block">International E-Commerce</span>
+                        <span class="text-[10px] text-slate-500">Allow cross-border USD transactions</span>
+                    </div>
+                    <input type="checkbox" id="chkIntlActive" onchange="syncCardSettings()" class="w-5 h-5 accent-blue-600">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="font-bold">Daily Spending Limit</span>
+                        <span id="lblLimitVal" class="mono font-bold text-blue-500">PKR 100,000</span>
+                    </div>
+                    <input type="range" min="5000" max="500000" step="5000" value="100000" id="rngOnlineLimit" oninput="onLimitSliderChange(this.value)" onchange="syncCardSettings()" class="w-full accent-blue-600">
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL D: PERSONAL FINANCE & SMART ANALYTICS -->
+        <div id="panelAnalytics" class="glass-card rounded-3xl p-5 shadow-xl space-y-4 hidden">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Personal Finance & Cashflow</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                    <span class="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400">Total Inflow</span>
+                    <p id="statTotalIn" class="text-base font-extrabold mono text-emerald-600 dark:text-emerald-400 mt-1">PKR 0</p>
+                </div>
+                <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                    <span class="text-[10px] uppercase font-bold text-rose-600 dark:text-rose-400">Total Outflow</span>
+                    <p id="statTotalOut" class="text-base font-extrabold mono text-rose-600 dark:text-rose-400 mt-1">PKR 0</p>
+                </div>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex justify-between items-center">
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400">1LINK Tax / Fees Paid</span>
+                <span id="statTotalTax" class="mono font-bold text-sm text-amber-600 dark:text-amber-400">PKR 0</span>
+            </div>
+        </div>
+
+        <!-- PANEL E: CALENDAR DATE-RANGE E-STATEMENT DISPATCHER -->
+        <div id="panelStatement" class="glass-card rounded-3xl p-5 shadow-xl space-y-4 hidden">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Official E-Statement Generator</h3>
+                <span class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded font-mono">🔒 Encrypted PDF</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Select the statement period below. An encrypted PDF will be sent to your email (Unlock with the last 4 digits of your account).</p>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">From Date</label>
+                    <input type="date" id="stmtStartDate" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">To Date</label>
+                    <input type="date" id="stmtEndDate" class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white font-mono">
+                </div>
+            </div>
+
+            <button type="button" id="btnSendStmt" onclick="requestEStatement()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white active:scale-[0.98] transition font-bold rounded-xl text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2">
+                <span>📩</span>
+                <span>Email Password-Protected PDF</span>
+            </button>
+        </div>
+
+        <!-- In-App Realtime Ledger Feed -->
+        <div class="glass-card rounded-3xl p-5 shadow-xl">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex justify-between items-center">
+                <span>Live Transaction Ledger</span>
+                <span class="text-[10px] text-blue-500 font-mono">Doubly Linked List</span>
+            </h3>
+            <div id="txnHistoryContainer" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500 text-center py-4">Syncing ledger records...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 3. ANIMATED DIGITAL RECEIPT MODAL          -->
+    <!-- ========================================== -->
+    <div id="receiptModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="w-full max-w-sm bg-slate-900 text-white rounded-3xl p-6 shadow-2xl border border-slate-700 relative">
+            
+            <div id="printableReceiptArea" class="bg-slate-950 rounded-2xl p-5 border border-slate-800 space-y-4 text-center">
+                <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto text-xl font-bold">✓</div>
+                <div>
+                    <h3 class="font-bold text-base text-white">VAULTLY Official Receipt</h3>
+                    <p class="text-[10px] text-slate-400 mono" id="rcptTxnId">TXN-00000000</p>
+                </div>
+
+                <div class="py-2 border-y border-slate-800">
+                    <span class="text-[10px] uppercase text-slate-400 font-bold">Total Settled</span>
+                    <h2 class="text-2xl font-black text-white mt-0.5" id="rcptTotalAmount">PKR 0.00</h2>
+                </div>
+
+                <div class="text-left text-xs space-y-2 pt-1 mono">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Sender Name:</span>
+                        <span class="text-slate-100 font-bold" id="rcptSenderName">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Sender Account:</span>
+                        <span class="text-slate-300" id="rcptSenderAcc">-</span>
+                    </div>
+
+                    <div id="rowReceiverName" class="flex justify-between">
+                        <span class="text-slate-400">Receiver Name:</span>
+                        <span class="text-emerald-400 font-bold" id="rcptBeneficiaryName">-</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Receiver Account:</span>
+                        <span class="text-emerald-300 font-bold" id="rcptBeneficiaryAcc">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Destination:</span>
+                        <span class="text-blue-400" id="rcptBank">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Base Amount:</span>
+                        <span class="text-slate-200" id="rcptBaseAmount">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">1LINK Tax / Fee:</span>
+                        <span class="text-amber-400" id="rcptTax">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Date & Time:</span>
+                        <span class="text-slate-400 text-[10px]" id="rcptTimestamp">-</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 text-[9px] text-slate-500 border-t border-slate-800">
+                    Cleared via VAULTLY Zero-Trust Security Engine
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 mt-4">
+                <button type="button" onclick="downloadReceiptImage()" class="py-2.5 bg-blue-600 hover:bg-blue-500 text-white active:scale-95 transition text-xs font-bold rounded-xl flex items-center justify-center space-x-1">
+                    <span>💾</span>
+                    <span>Save Receipt</span>
+                </button>
+                <button type="button" onclick="toggleShareOptions()" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95 transition text-xs font-bold rounded-xl flex items-center justify-center space-x-1">
+                    <span>📤</span>
+                    <span>Share Receipt</span>
+                </button>
+            </div>
+
+            <div id="shareDrawer" class="hidden mt-3 p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                <p class="text-[10px] text-slate-400 uppercase font-bold text-center">Share Voucher Via</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="shareViaWhatsApp()" class="py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-xl text-[11px] font-bold">
+                        WhatsApp
+                    </button>
+                    <button type="button" onclick="shareViaEmail()" class="py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl text-[11px] font-bold">
+                        Email
+                    </button>
+                    <button type="button" onclick="copyReceiptText()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold">
+                        Copy Text
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeReceiptModal()" class="w-full mt-2.5 py-2 text-xs text-slate-400 hover:text-white transition">Done</button>
+        </div>
+    </div>
+
+    <!-- Global Alert Notification -->
+    <div id="statusPopup" class="fixed bottom-6 left-1/2 -translate-x-1/2 w-11/12 max-w-sm p-4 rounded-2xl bg-slate-900 text-white shadow-2xl transition duration-300 transform translate-y-36 opacity-0 pointer-events-none flex items-center space-x-3 z-50 border border-slate-700">
+        <span id="popupIcon" class="text-2xl">ℹ️</span>
+        <div class="flex-1">
+            <h4 id="popupTitle" class="text-xs font-bold text-white uppercase tracking-wider">Notice</h4>
+            <p id="popupMessage" class="text-xs text-slate-300 mt-0.5 leading-snug">Details</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT CONTROLLER                      -->
+    <!-- ========================================== -->
+    <script>
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContextClass();
+
+        function playPaymentChime() {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(1046.50, now);
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.35);
+
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1567.98, now + 0.12);
+                gain2.gain.setValueAtTime(0.4, now + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(now + 0.12);
+                osc2.stop(now + 0.6);
+            } catch (e) {}
+        }
+
+        function playFraudBuzzer() {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.45);
+            } catch (e) {}
+        }
+
+        function playNoticePop() {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } catch (e) {}
+        }
+
+        let currentUser = null;
+        let activeAuthMode = 'login';
+        let pendingAuthEmail = "";
+        let isCardDetailsShown = false;
+        let lastKnownBalance = null;
+        let liveSyncInterval = null;
+        let currentReceiptData = null;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const today = new Date().toISOString().split('T')[0];
+            const firstOfMonth = today.slice(0, 8) + "01";
+            document.getElementById("stmtStartDate").value = firstOfMonth;
+            document.getElementById("stmtEndDate").value = today;
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            document.getElementById("themeIcon").innerText = isDark ? "☀️" : "🌙";
+        }
+
+        function showNotification(title, message, isError = false) {
+            const popup = document.getElementById("statusPopup");
+            document.getElementById("popupTitle").innerText = title;
+            document.getElementById("popupMessage").innerText = message;
+            document.getElementById("popupIcon").innerText = isError ? "⚠️" : "✅";
+            popup.classList.remove("translate-y-36", "opacity-0");
+            setTimeout(() => { popup.classList.add("translate-y-36", "opacity-0"); }, 4000);
+        }
+
+        function switchAuthTab(mode) {
+            activeAuthMode = mode;
+            document.getElementById("stepOtp").classList.add("hidden");
+            if (mode === 'login') {
+                document.getElementById("tabLogin").className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md transition";
+                document.getElementById("tabRegister").className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
+                document.getElementById("formLogin").classList.remove("hidden");
+                document.getElementById("formRegister").classList.add("hidden");
+            } else {
+                document.getElementById("tabRegister").className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md transition";
+                document.getElementById("tabLogin").className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
+                document.getElementById("formRegister").classList.remove("hidden");
+                document.getElementById("formLogin").classList.add("hidden");
+            }
+        }
+
+        function switchServiceTab(tab) {
+            const panels = ["panelTransfer", "panelBills", "panelCard", "panelAnalytics", "panelStatement"];
+            const buttons = ["btnTabTransfer", "btnTabBills", "btnTabCard", "btnTabAnalytics", "btnTabStatement"];
+            panels.forEach(p => document.getElementById(p).classList.add("hidden"));
+            buttons.forEach(b => document.getElementById(b).classList.remove("ring-2", "ring-blue-500"));
+
+            if (tab === 'transfer') {
+                document.getElementById("panelTransfer").classList.remove("hidden");
+                document.getElementById("btnTabTransfer").classList.add("ring-2", "ring-blue-500");
+            } else if (tab === 'bills') {
+                document.getElementById("panelBills").classList.remove("hidden");
+                document.getElementById("btnTabBills").classList.add("ring-2", "ring-blue-500");
+            } else if (tab === 'card') {
+                document.getElementById("panelCard").classList.remove("hidden");
+                document.getElementById("btnTabCard").classList.add("ring-2", "ring-blue-500");
+            } else if (tab === 'analytics') {
+                document.getElementById("panelAnalytics").classList.remove("hidden");
+                document.getElementById("btnTabAnalytics").classList.add("ring-2", "ring-blue-500");
+            } else if (tab === 'statement') {
+                document.getElementById("panelStatement").classList.remove("hidden");
+                document.getElementById("btnTabStatement").classList.add("ring-2", "ring-blue-500");
+            }
+        }
+
+        function onBankSelectionChange() {
+            const selected = document.getElementById("txBankSelect").value;
+            const badge = document.getElementById("taxBadge");
+            if (selected.includes("VAULTLY")) {
+                badge.innerText = "FREE (Same Bank)";
+                badge.className = "text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full";
+            } else {
+                badge.innerText = "+ PKR 30 Tax (1LINK IBFT)";
+                badge.className = "text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full";
+            }
+        }
+
+        async function initiateLogin() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                showNotification("Input Error", "Please provide email and password.", true);
+                return;
+            }
+
+            const btn = document.getElementById("btnLogin");
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/api/login/initiate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    playNoticePop();
+                    pendingAuthEmail = email;
+                    document.getElementById("formLogin").classList.add("hidden");
+                    document.getElementById("stepOtp").classList.remove("hidden");
+                    document.getElementById("otpNoticeEmail").innerText = `Dispatched to ${email}`;
+                    showNotification("2FA Code Sent", data.message);
+                } else {
+                    playFraudBuzzer();
+                    showNotification("Access Denied", data.message, true);
+                }
+            } catch (err) {
+                showNotification("Server Error", "Could not connect to banking server.", true);
+            } finally {
+                btn.innerText = "Continue with 2FA";
+                btn.disabled = false;
+            }
+        }
+
+        async function initiateRegister() {
+            const name = document.getElementById("regName").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const deposit = document.getElementById("regDeposit").value;
+            const cardScheme = document.getElementById("regCardScheme").value;
+
+            if (!name || !email || !password) {
+                showNotification("Input Error", "All fields are required.", true);
+                return;
+            }
+
+            const btn = document.getElementById("btnRegister");
+            btn.innerText = "Creating Account...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/api/register/initiate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password,
+                        initial_deposit: deposit,
+                        card_scheme: cardScheme
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    playNoticePop();
+                    pendingAuthEmail = email;
+                    document.getElementById("formRegister").classList.add("hidden");
+                    document.getElementById("stepOtp").classList.remove("hidden");
+                    document.getElementById("otpNoticeEmail").innerText = `Dispatched to ${email}`;
+                    showNotification("OTP Dispatched", data.message);
+                } else {
+                    playFraudBuzzer();
+                    showNotification("Registration Error", data.message, true);
+                }
+            } catch (err) {
+                showNotification("Server Error", "Could not reach registration server.", true);
+            } finally {
+                btn.innerText = "Create Account & Send OTP";
+                btn.disabled = false;
+            }
+        }
+
+        async function submitOtpVerification() {
+            const otp = document.getElementById("otpCode").value.trim();
+            const endpoint = (activeAuthMode === 'login') ? "/api/login/verify-otp" : "/api/register/verify-otp";
+
+            const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: pendingAuthEmail, otp })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                playPaymentChime();
+                currentUser = data.user;
+                lastKnownBalance = currentUser.balance;
+                document.getElementById("authView").classList.add("hidden");
+                document.getElementById("dashboardView").classList.remove("hidden");
+                syncDeviceState();
+                showNotification("Authenticated", data.message);
+                
+                if (liveSyncInterval) clearInterval(liveSyncInterval);
+                liveSyncInterval = setInterval(syncDeviceState, 2500);
+            } else {
+                playFraudBuzzer();
+                showNotification("Invalid OTP", data.message, true);
+            }
+        }
+
+        async function syncDeviceState() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch("/api/user/" + currentUser.account_no);
+                const data = await res.json();
+                if (data.success) {
+                    const freshBalance = data.user.balance;
+                    if (lastKnownBalance !== null && freshBalance > lastKnownBalance) {
+                        const diff = freshBalance - lastKnownBalance;
+                        playPaymentChime();
+                        showNotification("Funds Received! 💰", `+PKR ${diff.toLocaleString()} credited to your account!`);
+                    }
+                    lastKnownBalance = freshBalance;
+                    currentUser = data.user;
+                    renderDashboard(data.transactions);
+                }
+            } catch (err) {}
+        }
+
+        function renderDashboard(transactions = null) {
+            document.getElementById("cardHolder").innerText = currentUser.name;
+            document.getElementById("cardAccNo").innerText = currentUser.account_no;
+            document.getElementById("cardBalance").innerText = "PKR " + Number(currentUser.balance).toLocaleString('en-US', {minimumFractionDigits: 2});
+
+            if (currentUser.card) {
+                const scheme = (currentUser.card.scheme || "VISA").toUpperCase();
+                const cardBox = document.getElementById("virtualCardBox");
+                const logoContainer = document.getElementById("cardSchemeLogo");
+                const tierLabel = document.getElementById("cardTierLabel");
+                const btnVisa = document.getElementById("btnChooseVisa");
+                const btnMaster = document.getElementById("btnChooseMaster");
+
+                if (scheme === "MASTERCARD") {
+                    cardBox.className = "mastercard-card-bg rounded-3xl p-6 relative overflow-hidden border border-amber-500/25 text-white select-none transition-all duration-500";
+                    tierLabel.innerText = "WORLD ELITE";
+                    tierLabel.className = "text-[9px] uppercase tracking-widest bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-semibold";
+                    logoContainer.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="w-6 h-6 rounded-full bg-red-600 opacity-90"></div>
+                            <div class="w-6 h-6 rounded-full bg-amber-500 opacity-90 -ml-2.5"></div>
+                        </div>
+                    `;
+                    btnMaster.className = "py-2.5 px-3 rounded-xl font-bold text-xs border border-amber-500 bg-amber-600 text-white transition flex items-center justify-center space-x-1.5";
+                    btnVisa.className = "py-2.5 px-3 rounded-xl font-bold text-xs border border-slate-700 bg-slate-800 text-slate-300 transition flex items-center justify-center space-x-1.5";
+                } else {
+                    cardBox.className = "visa-card-bg rounded-3xl p-6 relative overflow-hidden border border-white/15 text-white select-none transition-all duration-500";
+                    tierLabel.innerText = "INFINITE";
+                    tierLabel.className = "text-[9px] uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded text-blue-200 font-semibold";
+                    logoContainer.innerHTML = `<span class="italic font-black text-2xl tracking-tighter text-white">VISA</span>`;
+                    btnVisa.className = "py-2.5 px-3 rounded-xl font-bold text-xs border border-blue-500 bg-blue-600 text-white transition flex items-center justify-center space-x-1.5";
+                    btnMaster.className = "py-2.5 px-3 rounded-xl font-bold text-xs border border-slate-700 bg-slate-800 text-slate-300 transition flex items-center justify-center space-x-1.5";
+                }
+
+                const prefix4 = currentUser.card.card_number.slice(0, 4);
+                if (isCardDetailsShown) {
+                    document.getElementById("fullCardDetails").innerText = currentUser.card.card_number;
+                    document.getElementById("cardCvvVal").innerText = currentUser.card.cvv;
+                } else {
+                    document.getElementById("fullCardDetails").innerHTML = `${prefix4} •••• •••• <span id="cardEndDigits">${currentUser.account_no.slice(-4)}</span>`;
+                    document.getElementById("cardCvvVal").innerText = "•••";
+                }
+
+                document.getElementById("chkCardActive").checked = currentUser.card.is_active;
+                document.getElementById("chkIntlActive").checked = currentUser.card.intl_allowed;
+                document.getElementById("rngOnlineLimit").value = currentUser.card.online_limit;
+                document.getElementById("lblLimitVal").innerText = "PKR " + Number(currentUser.card.online_limit).toLocaleString();
+                document.getElementById("cardExpVal").innerText = currentUser.card.expiry;
+
+                const badge = document.getElementById("cardStatusBadge");
+                if (currentUser.card.is_active) {
+                    badge.innerText = "CARD ACTIVE";
+                    badge.className = "text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold";
+                } else {
+                    badge.innerText = "CARD FROZEN";
+                    badge.className = "text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-0.5 rounded-full font-bold";
+                }
+            }
+
+            if (transactions) {
+                let totalIn = 0, totalOut = 0, totalTax = 0;
+                transactions.forEach(t => {
+                    if (t.direction === 'CREDIT') totalIn += Number(t.amount);
+                    else totalOut += Number(t.amount);
+                    totalTax += Number(t.tax || 0);
+                });
+                document.getElementById("statTotalIn").innerText = "PKR " + totalIn.toLocaleString();
+                document.getElementById("statTotalOut").innerText = "PKR " + totalOut.toLocaleString();
+                document.getElementById("statTotalTax").innerText = "PKR " + totalTax.toLocaleString();
+
+                const histCont = document.getElementById("txnHistoryContainer");
+                if (transactions.length === 0) {
+                    histCont.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No transactions yet.</p>`;
+                } else {
+                    histCont.innerHTML = transactions.map(t => `
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-slate-200/60 dark:bg-slate-900/70 border border-slate-300/60 dark:border-slate-800">
+                            <div>
+                                <span class="text-xs font-bold block">${t.label}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">${t.bank} • ${t.timestamp}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="mono font-bold text-xs ${t.direction === 'CREDIT' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">
+                                    ${t.direction === 'CREDIT' ? '+' : '-'} PKR ${Number(t.amount).toLocaleString()}
+                                </span>
+                                ${t.tax > 0 ? `<span class="block text-[9px] text-amber-600 dark:text-amber-400 mono">+PKR ${t.tax} Fee</span>` : ''}
+                            </div>
+                        </div>
+                    `).join("");
+                }
+            }
+        }
+
+        async function executeTransfer() {
+            const bankName = document.getElementById("txBankSelect").value;
+            const receiver = document.getElementById("txBeneficiary").value.trim();
+            const amount = document.getElementById("txAmount").value;
+
+            if (!receiver || !amount) {
+                showNotification("Missing Fields", "Enter beneficiary account and amount.", true);
+                return;
+            }
+
+            const btn = document.getElementById("btnTransfer");
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            const res = await fetch("/api/transfer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sender_acc: currentUser.account_no,
+                    bank_name: bankName,
+                    receiver_acc: receiver,
+                    amount: amount
+                })
+            });
+            const data = await res.json();
+            btn.innerText = "Execute Instant Transfer";
+            btn.disabled = false;
+
+            if (data.success) {
+                playPaymentChime();
+                document.getElementById("txAmount").value = "";
+                document.getElementById("txBeneficiary").value = "";
+                openReceiptModal(data.receipt);
+                syncDeviceState();
+            } else {
+                playFraudBuzzer();
+                showNotification("Security Alert", data.message, true);
+            }
+        }
+
+        async function executeBillPayment() {
+            const company = document.getElementById("billCompanySelect").value;
+            const consumerNo = document.getElementById("billConsumerNo").value.trim();
+            const amount = document.getElementById("billAmount").value;
+
+            if (!consumerNo || !amount) {
+                showNotification("Missing Inputs", "Consumer number and amount required.", true);
+                return;
+            }
+
+            const btn = document.getElementById("btnPayBill");
+            btn.innerText = "Settling Bill...";
+            btn.disabled = true;
+
+            const res = await fetch("/api/bill/pay", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    account_no: currentUser.account_no,
+                    company: company,
+                    consumer_no: consumerNo,
+                    amount: amount
+                })
+            });
+            const data = await res.json();
+            btn.innerText = "Pay Bill & Generate Voucher";
+            btn.disabled = false;
+
+            if (data.success) {
+                playPaymentChime();
+                document.getElementById("billAmount").value = "";
+                document.getElementById("billConsumerNo").value = "";
+                openReceiptModal(data.receipt);
+                syncDeviceState();
+            } else {
+                playFraudBuzzer();
+                showNotification("Payment Failed", data.message, true);
+            }
+        }
+
+        function openReceiptModal(r) {
+            currentReceiptData = r;
+            document.getElementById("shareDrawer").classList.add("hidden");
+
+            document.getElementById("rcptTxnId").innerText = r.txn_id;
+            document.getElementById("rcptTotalAmount").innerText = "PKR " + Number(r.total).toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById("rcptSenderName").innerText = r.sender_name;
+            document.getElementById("rcptSenderAcc").innerText = r.sender_acc;
+
+            const rowRecName = document.getElementById("rowReceiverName");
+            if (r.receiver_name) {
+                rowRecName.classList.remove("hidden");
+                document.getElementById("rcptBeneficiaryName").innerText = r.receiver_name;
+            } else {
+                rowRecName.classList.add("hidden");
+            }
+
+            document.getElementById("rcptBeneficiaryAcc").innerText = r.receiver_acc;
+            document.getElementById("rcptBank").innerText = r.bank_name;
+            document.getElementById("rcptBaseAmount").innerText = "PKR " + Number(r.amount).toLocaleString();
+            document.getElementById("rcptTax").innerText = r.tax > 0 ? "PKR " + Number(r.tax).toLocaleString() : "PKR 0 (Free)";
+            document.getElementById("rcptTimestamp").innerText = r.timestamp;
+
+            document.getElementById("receiptModal").classList.remove("hidden");
+        }
+
+        function closeReceiptModal() {
+            document.getElementById("receiptModal").classList.add("hidden");
+        }
+
+        function downloadReceiptImage() {
+            const receiptArea = document.getElementById("printableReceiptArea");
+            html2canvas(receiptArea, { backgroundColor: '#020617', scale: 2 }).then(canvas => {
+                const link = document.createElement("a");
+                link.download = `Vaultly_Receipt_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                showNotification("Saved", "Receipt image downloaded.");
+            });
+        }
+
+        function buildShareSummary() {
+            if (!currentReceiptData) return "";
+            const r = currentReceiptData;
+            let lines = [
+                `✅ *VAULTLY OFFICIAL PAYMENT RECEIPT*`,
+                `Ref ID: ${r.txn_id}`,
+                `Total Amount: PKR ${Number(r.total).toLocaleString()}`,
+                `Sender: ${r.sender_name} (${r.sender_acc})`
+            ];
+            if (r.receiver_name) {
+                lines.push(`Receiver: ${r.receiver_name} (${r.receiver_acc})`);
+            } else {
+                lines.push(`Receiver Acc: ${r.receiver_acc}`);
+            }
+            lines.push(`Bank: ${r.bank_name}`);
+            lines.push(`Date: ${r.timestamp}`);
+            return lines.join("\n");
+        }
+
+        function toggleShareOptions() {
+            document.getElementById("shareDrawer").classList.toggle("hidden");
+        }
+
+        function shareViaWhatsApp() {
+            const text = encodeURIComponent(buildShareSummary());
+            window.open(`https://wa.me/?text=${text}`, "_blank");
+        }
+
+        function shareViaEmail() {
+            const subject = encodeURIComponent(`VAULTLY Payment Receipt - ${currentReceiptData.txn_id}`);
+            const body = encodeURIComponent(buildShareSummary());
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        function fallbackCopyText(text) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand("copy");
+                showNotification("Copied!", "Copied to clipboard.");
+            } catch (e) {
+                showNotification("Error", "Could not copy text.", true);
+            }
+            document.body.removeChild(ta);
+        }
+
+        function copyReceiptText() {
+            const text = buildShareSummary();
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification("Copied!", "Receipt details copied to clipboard.");
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function copyAccountNo() {
+            const acc = currentUser.account_no;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(acc).then(() => {
+                    showNotification("Copied", `Account ${acc} copied!`);
+                });
+            } else {
+                fallbackCopyText(acc);
+            }
+        }
+
+        function toggleCardMask() {
+            isCardDetailsShown = !isCardDetailsShown;
+            document.getElementById("btnMaskCard").innerText = isCardDetailsShown ? "🙈 Hide Numbers" : "👁️ Show Numbers";
+            renderDashboard();
+        }
+
+        function onLimitSliderChange(val) {
+            document.getElementById("lblLimitVal").innerText = "PKR " + Number(val).toLocaleString();
+        }
+
+        async function changeCardScheme(newScheme) {
+            const isActive = document.getElementById("chkCardActive").checked;
+            const isIntl = document.getElementById("chkIntlActive").checked;
+            const limit = document.getElementById("rngOnlineLimit").value;
+
+            await fetch("/api/card/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    account_no: currentUser.account_no,
+                    is_active: isActive,
+                    intl_allowed: isIntl,
+                    online_limit: limit,
+                    scheme: newScheme
+                })
+            });
+            playNoticePop();
+            syncDeviceState();
+            showNotification("Card Upgraded", `Virtual card switched to ${newScheme}!`);
+        }
+
+        async function syncCardSettings() {
+            const isActive = document.getElementById("chkCardActive").checked;
+            const isIntl = document.getElementById("chkIntlActive").checked;
+            const limit = document.getElementById("rngOnlineLimit").value;
+
+            await fetch("/api/card/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    account_no: currentUser.account_no,
+                    is_active: isActive,
+                    intl_allowed: isIntl,
+                    online_limit: limit
+                })
+            });
+            syncDeviceState();
+            showNotification("Card Updated", "Virtual card security preferences saved.");
+        }
+
+        async function requestEStatement() {
+            const startDate = document.getElementById("stmtStartDate").value;
+            const endDate = document.getElementById("stmtEndDate").value;
+
+            const btn = document.getElementById("btnSendStmt");
+            btn.innerText = "Encrypting & Dispatching PDF...";
+            btn.disabled = true;
+
+            playNoticePop();
+            const res = await fetch("/api/statement/request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    account_no: currentUser.account_no,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+            const data = await res.json();
+            btn.innerHTML = `<span>📩</span><span>Email Password-Protected PDF</span>`;
+            btn.disabled = false;
+
+            if (data.success) {
+                playPaymentChime();
+                showNotification("Statement Dispatched", data.message);
+            } else {
+                playFraudBuzzer();
+                showNotification("Error", data.message, true);
+            }
+        }
+
+        function cancelOtpStep() {
+            document.getElementById("stepOtp").classList.add("hidden");
+            if (activeAuthMode === 'login') {
+                document.getElementById("formLogin").classList.remove("hidden");
+            } else {
+                document.getElementById("formRegister").classList.remove("hidden");
+            }
+        }
+
+        function logout() {
+            if (liveSyncInterval) clearInterval(liveSyncInterval);
+            currentUser = null;
+            document.getElementById("dashboardView").classList.add("hidden");
+            document.getElementById("authView").classList.remove("hidden");
+            switchAuthTab('login');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+{
+    "users": [
+        {
+            "name": "Muhammad Mustafa",
+            "email": "mk4672265@gmail.com",
+            "account_no": "8857136731",
+            "password_hash": "31f2c09b98af2f43d6397d8f6c9e63a6320789e3a14153377c3fad83d6fa7ac6",
+            "salt": "d8cbc386b29b0c4da11e586397a0f0b0",
+            "balance": 800000.0,
+            "is_frozen": false,
+            "created_at": "2026-11-05 03:18:48",
+            "card": {
+                "scheme": "MASTERCARD",
+                "card_number": "5355 6407 9251 6731",
+                "cvv": "448",
+                "expiry": "11/31",
+                "is_active": true,
+                "intl_allowed": false,
+                "online_limit": 100000.0
+            }
+        },
+        {
+            "name": "Hasan Amir",
+            "email": "m.mustafakhan1121@gmail.com",
+            "account_no": "8870055333",
+            "password_hash": "884fd5a6194d4d0cde201eaa5f47bc4d365d8b69834ad2d6a5e4758cfd522517",
+            "salt": "5b10423da7f452bc55dbbf055d8c328a",
+            "balance": 500000.0,
+            "is_frozen": false,
+            "created_at": "2026-11-05 03:21:19",
+            "card": {
+                "scheme": "VISA",
+                "card_number": "4282 5761 5444 5333",
+                "cvv": "593",
+                "expiry": "11/31",
+                "is_active": true,
+                "intl_allowed": false,
+                "online_limit": 100000.0
+            }
+        }
+    ],
+    "transactions": [
+        {
+            "txn_id": "TXN-EB86868E",
+            "is_same_bank": true,
+            "sender_name": "VAULTLY Treasury",
+            "sender_acc": "VAULTLY_CENTRAL",
+            "receiver_acc": "8857136731",
+            "receiver_name": "Muhammad Mustafa",
+            "bank_name": "VAULTLY (Internal)",
+            "type": "INITIAL_DEPOSIT",
+            "amount": 1000000.0,
+            "tax": 0.0,
+            "total": 1000000.0,
+            "timestamp": "2026-11-05 03:18:48",
+            "status": "COMPLETED"
+        },
+        {
+            "txn_id": "TXN-484E9ACE",
+            "is_same_bank": true,
+            "sender_name": "VAULTLY Treasury",
+            "sender_acc": "VAULTLY_CENTRAL",
+            "receiver_acc": "8870055333",
+            "receiver_name": "Hasan Amir",
+            "bank_name": "VAULTLY (Internal)",
+            "type": "INITIAL_DEPOSIT",
+            "amount": 300000.0,
+            "tax": 0.0,
+            "total": 300000.0,
+            "timestamp": "2026-11-05 03:21:19",
+            "status": "COMPLETED"
+        },
+        {
+            "txn_id": "TXN-5E37BAAC",
+            "is_same_bank": true,
+            "sender_name": "Muhammad Mustafa",
+            "sender_acc": "8857136731",
+            "receiver_acc": "8870055333",
+            "receiver_name": "Hasan Amir",
+            "bank_name": "VAULTLY (Same Bank - Free)",
+            "amount": 200000.0,
+            "tax": 0.0,
+            "total": 200000.0,
+            "timestamp": "2026-11-05 03:23:02",
+            "status": "COMPLETED / SETTLED"
+        }
+    ],
+    "alerts": []
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAULTLY — Security & Audit Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen p-6">
+
+    <!-- Header -->
+    <header class="flex flex-wrap justify-between items-center pb-6 border-b border-slate-800 gap-4">
+        <div class="flex items-center space-x-3.5">
+            <!-- Official VAULTLY Geometric Emblem -->
+            <div class="w-12 h-12 rounded-2xl bg-[#0a0f1e] border-2 border-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <svg class="w-7 h-7" viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,14 58,28 50,42 42,28" fill="#10b981"/>
+                    <polygon points="20,26 38,26 50,64 62,26 80,26 57,86 43,86" fill="#2563eb"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight">VAULTLY Security & AML Radar</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Live DFS Cycle Graph, Sliding Window Audit & Persistent JSON Engine</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <!-- Download / Export Buttons -->
+            <a href="/api/admin/export/csv" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 flex items-center space-x-1.5 transition">
+                <span>📊</span>
+                <span>Download Master CSV</span>
+            </a>
+            <a href="/api/admin/export/json" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/20 flex items-center space-x-1.5 transition">
+                <span>💾</span>
+                <span>Backup JSON DB</span>
+            </a>
+            <div class="flex items-center space-x-2 text-xs bg-emerald-950/40 border border-emerald-800/40 px-3 py-2 rounded-xl text-emerald-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>Auto-Saved to Disk</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Summary KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
+        <div class="glass p-4 rounded-2xl">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Total Registered Accounts</span>
+            <p id="kpiAccounts" class="text-2xl font-extrabold text-white mt-1 mono">0</p>
+        </div>
+        <div class="glass p-4 rounded-2xl">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Total System Liquidity</span>
+            <p id="kpiLiquidity" class="text-2xl font-extrabold text-emerald-400 mt-1 mono">PKR 0</p>
+        </div>
+        <div class="glass p-4 rounded-2xl">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Ledger Transactions</span>
+            <p id="kpiTxns" class="text-2xl font-extrabold text-blue-400 mt-1 mono">0</p>
+        </div>
+        <div class="glass p-4 rounded-2xl">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Intercepted Fraud Threats</span>
+            <p id="kpiThreats" class="text-2xl font-extrabold text-rose-500 mt-1 mono">0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        
+        <!-- Left: Anti-Fraud Alerts & AML Interceptions -->
+        <div class="lg:col-span-1 glass rounded-2xl p-5">
+            <h2 class="text-xs uppercase font-bold tracking-wider text-red-400 mb-3 flex items-center justify-between">
+                <span>Security Interceptions</span>
+                <span id="alertCount" class="bg-red-500/20 px-2 py-0.5 rounded text-[10px]">0 Alerts</span>
+            </h2>
+            <div id="alertsContainer" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500">No active security threats flagged yet.</p>
+            </div>
+        </div>
+
+        <!-- Center & Right: Live Accounts & Transaction Feed -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Accounts Directory -->
+            <div class="glass rounded-2xl p-5">
+                <h2 class="text-xs uppercase font-bold tracking-wider text-blue-400 mb-3">Live Account Directory (Custom Hash Table)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-800 pb-2">
+                                <th class="pb-2">Account No</th>
+                                <th class="pb-2">Holder Name</th>
+                                <th class="pb-2">Card Tier</th>
+                                <th class="pb-2">Balance</th>
+                                <th class="pb-2">Status</th>
+                                <th class="pb-2 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsBody" class="divide-y divide-slate-800/50">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Transaction Ledger Stream -->
+            <div class="glass rounded-2xl p-5">
+                <h2 class="text-xs uppercase font-bold tracking-wider text-emerald-400 mb-3">Ledger Stream (Doubly Linked List)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs mono">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-800 pb-2">
+                                <th class="pb-2">Txn ID</th>
+                                <th class="pb-2">Sender</th>
+                                <th class="pb-2">Receiver / Biller</th>
+                                <th class="pb-2">Network</th>
+                                <th class="pb-2">Amount</th>
+                                <th class="pb-2">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txBody" class="divide-y divide-slate-800/50">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Live Polling Script -->
+    <script>
+        async function fetchFeed() {
+            try {
+                const res = await fetch("/api/admin/feed");
+                const data = await res.json();
+
+                // Update KPIs
+                document.getElementById("kpiAccounts").innerText = data.accounts.length;
+                const totalBal = data.accounts.reduce((acc, u) => acc + Number(u.balance || 0), 0);
+                document.getElementById("kpiLiquidity").innerText = "PKR " + totalBal.toLocaleString();
+                document.getElementById("kpiTxns").innerText = data.transactions.length;
+                document.getElementById("kpiThreats").innerText = data.alerts.length;
+
+                // 1. Render Alerts
+                const aCont = document.getElementById("alertsContainer");
+                document.getElementById("alertCount").innerText = `${data.alerts.length} Alerts`;
+                if (data.alerts.length > 0) {
+                    aCont.innerHTML = data.alerts.map(a => `
+                        <div class="p-3 bg-red-950/30 border border-red-800/40 rounded-xl space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-red-400 text-xs">${a.type}</span>
+                                <span class="text-[10px] text-slate-500">${a.timestamp}</span>
+                            </div>
+                            <p class="text-xs text-slate-300">${a.detail}</p>
+                        </div>
+                    `).join("");
+                }
+
+                // 2. Render Accounts
+                const accBody = document.getElementById("accountsBody");
+                accBody.innerHTML = data.accounts.map(acc => `
+                    <tr class="py-2.5">
+                        <td class="mono font-semibold text-blue-400 py-2.5">${acc.account_no}</td>
+                        <td class="text-slate-200 font-semibold">${acc.name}</td>
+                        <td>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                ${acc.card_scheme || 'VISA'}
+                            </span>
+                        </td>
+                        <td class="font-bold text-slate-100 mono">PKR ${Number(acc.balance).toLocaleString()}</td>
+                        <td>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${acc.is_frozen ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                                ${acc.is_frozen ? 'LOCKED / FROZEN' : 'ACTIVE'}
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <button onclick="toggleFreeze('${acc.account_no}', ${!acc.is_frozen})" class="px-3 py-1 rounded text-[11px] font-semibold transition ${acc.is_frozen ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-red-600/80 hover:bg-red-500 text-white'}">
+                                ${acc.is_frozen ? 'Unlock' : 'Freeze'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join("");
+
+                // 3. Render Transactions
+                const txBody = document.getElementById("txBody");
+                txBody.innerHTML = data.transactions.map(t => `
+                    <tr class="py-2">
+                        <td class="py-2.5 text-slate-400">${t.txn_id}</td>
+                        <td class="text-blue-400">${t.sender_name || ''} (${t.sender_acc})</td>
+                        <td class="text-emerald-400">${t.receiver_name ? t.receiver_name + ' (' + t.receiver_acc + ')' : t.receiver_acc}</td>
+                        <td class="text-slate-400 text-[11px]">${t.bank_name || 'VAULTLY'}</td>
+                        <td class="font-bold text-white">PKR ${Number(t.amount).toLocaleString()}</td>
+                        <td class="text-slate-500 text-[11px]">${t.timestamp}</td>
+                    </tr>
+                `).join("");
+
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }
+
+        async function toggleFreeze(account_no, freeze_state) {
+            await fetch("/api/admin/toggle-freeze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ account_no, freeze_state })
+            });
+            fetchFeed();
+        }
+
+        setInterval(fetchFeed, 2500);
+        fetchFeed();
+    </script>
+</body>
+</html>
