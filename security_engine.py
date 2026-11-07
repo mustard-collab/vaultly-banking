@@ -7,6 +7,7 @@ import secrets
 import hashlib
 import smtplib
 import ssl
+import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -120,7 +121,6 @@ class PDFStatementEngine:
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
         ]))
         elements.append(txn_table)
-        
         elements.append(Spacer(1, 30))
         note_text = "<font size='8' color='#94a3b8'>Confidential document. This electronic statement is password protected for your privacy. Do not share your banking password or PIN.</font>"
         elements.append(Paragraph(note_text, ParagraphStyle(name="Note", alignment=1)))
@@ -150,8 +150,13 @@ class PDFStatementEngine:
 class MailerService:
     @staticmethod
     def send_otp_email(recipient_email: str, otp_code: str) -> bool:
-        """Sends an HTML formatted OTP verification email."""
-        subject = f"{config.BANK_NAME} - One-Time Login Verification Code"
+        """Sends an HTML formatted OTP verification email asynchronously with terminal debug fallback."""
+        # Instant Console Debug Print (Taake delay hone par bhi terminal se OTP mil jaye)
+        print("\n" + "="*50)
+        print(f"🔥 [INSTANT OTP FOR {recipient_email}]: {otp_code}")
+        print("="*50 + "\n")
+
+        subject = f"{config.BANK_NAME} One-Time Login Verification Code"
         
         html_content = f"""
         <html>
@@ -172,12 +177,15 @@ class MailerService:
         </html>
         """
         
-        return MailerService._send_mail(recipient_email, subject, html_content)
+        # Background Threading for Instant Response without blocking Flask server
+        thread = threading.Thread(target=MailerService._send_mail, args=(recipient_email, subject, html_content))
+        thread.start()
+        return True
 
     @staticmethod
     def send_statement_email(recipient_email: str, account_no: str, pdf_buffer: io.BytesIO) -> bool:
-        """Delivers the password-protected statement PDF attachment via email."""
-        subject = f"{config.BANK_NAME} - Your Requested Account E-Statement"
+        """Delivers the password-protected statement PDF attachment via email asynchronously."""
+        subject = f"{config.BANK_NAME} Your Requested Account E-Statement"
         last_4 = str(account_no)[-4:]
         
         html_content = f"""
@@ -202,17 +210,16 @@ class MailerService:
         </html>
         """
         
-        return MailerService._send_mail(
-            recipient_email=recipient_email,
-            subject=subject,
-            html_content=html_content,
-            attachment_buffer=pdf_buffer,
-            attachment_name=f"E-Statement_{account_no}.pdf"
+        thread = threading.Thread(
+            target=MailerService._send_mail, 
+            args=(recipient_email, subject, html_content, pdf_buffer, f"E-Statement_{account_no}.pdf")
         )
+        thread.start()
+        return True
 
     @staticmethod
     def _send_mail(recipient_email: str, subject: str, html_content: str, attachment_buffer: io.BytesIO = None, attachment_name: str = "") -> bool:
-        """Internal SMTP TLS mail sender."""
+        """Internal SMTP TLS mail sender executed in background thread."""
         try:
             msg = MIMEMultipart()
             msg["From"] = f"{config.BANK_NAME} <{config.BANK_EMAIL}>"
