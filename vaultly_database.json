@@ -6,7 +6,7 @@
             "account_no": "8857136731",
             "password_hash": "31f2c09b98af2f43d6397d8f6c9e63a6320789e3a14153377c3fad83d6fa7ac6",
             "salt": "d8cbc386b29b0c4da11e586397a0f0b0",
-            "balance": 800000.0,
+            "balance": 799134.0,
             "is_frozen": false,
             "created_at": "2026-11-05 03:18:48",
             "card": {
@@ -82,6 +82,20 @@
             "tax": 0.0,
             "total": 200000.0,
             "timestamp": "2026-11-05 03:23:02",
+            "status": "COMPLETED / SETTLED"
+        },
+        {
+            "txn_id": "TXN-3D71FF6A",
+            "is_same_bank": false,
+            "sender_name": "Muhammad Mustafa",
+            "sender_acc": "8857136731",
+            "receiver_acc": "03187977706",
+            "receiver_name": null,
+            "bank_name": "NayaPay",
+            "amount": 836.0,
+            "tax": 30.0,
+            "total": 866.0,
+            "timestamp": "2026-11-06 21:21:09",
             "status": "COMPLETED / SETTLED"
         }
     ],

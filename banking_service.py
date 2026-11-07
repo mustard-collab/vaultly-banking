@@ -1,4 +1,4 @@
-# banking_service.py
+﻿# banking_service.py
 """
 VAULTLY Banking Core Service (v2.0 Enterprise)
 - Persistent JSON Storage (Auto-Save & Load)
@@ -19,7 +19,7 @@ from typing import Optional, Tuple, List, Dict, Any
 from dsa_core import HashTable, TransactionLedger, SlidingWindowVelocity, DirectedGraph, MinHeap
 from security_engine import SecurityEngine, PDFStatementEngine, MailerService
 
-DB_FILE = "vaultly_database.json"
+DB_FILE = "/tmp/vaultly_database.json"
 
 PAKISTAN_BANKS = [
     "VAULTLY (Same Bank - Free)",
